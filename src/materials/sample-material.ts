@@ -10,7 +10,6 @@ export class SampleMaterial extends BABYLON.ShaderMaterial {
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(name, scene, { vertex: "sample", fragment: "sample" }, {
-            needAlphaBlending: true,
             uniforms: [
                 "worldViewProjection",
                 "time"

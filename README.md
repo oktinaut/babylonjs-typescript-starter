@@ -28,15 +28,17 @@ Run the following commands from within the repository's root folder to build the
 
     - `glsl.d.ts` *typescript definition file to resolve .glsl files*
 
-    - `materials/` *folder for custom materials/shaders*
+    - `Materials/` *folder for custom materials/shaders*
 
-        - `sample-material.ts` *sample custom material*
+        - `SampleMaterial.ts` *sample custom material*
 
-        - `glsl/` *folder containing GLSL shader code*
+        - `Shaders/` *folder containing GLSL shader code*
 
-            - `sample.fragment.glsl` *sample fragment shader*
+            - `Sample/` *folder containing sample shader* 
 
-            - `sample.vertex.glsl` *sample vertex shader*
+                - `sample.fragment.glsl` *sample fragment shader*
+
+                - `sample.vertex.glsl` *sample vertex shader*
 
 - `public` *folder containing static assets*
 

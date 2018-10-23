@@ -1,6 +1,6 @@
 import * as BABYLON from "babylonjs";
 
-import { SampleMaterial } from "./materials/sample-material";
+import { SampleMaterial } from "./Materials/SampleMaterial";
 
 const view = document.getElementById("view") as HTMLCanvasElement;
 const engine = new BABYLON.Engine(view, true);

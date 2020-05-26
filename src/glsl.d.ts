@@ -1,5 +1,5 @@
 declare module "*.glsl" {
-    const shader: string;
+    const shader: string
 
-    export = shader;
+    export = shader
 }

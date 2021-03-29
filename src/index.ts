@@ -1,4 +1,9 @@
-import { ArcRotateCamera, Engine, HemisphericLight, MeshBuilder, Scene, Vector3 } from "babylonjs"
+import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera"
+import { Engine } from "@babylonjs/core/Engines/engine"
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight"
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
+import { Scene } from "@babylonjs/core/scene"
+import { Vector3 } from "@babylonjs/core/Maths/math.vector"
 
 import { SampleMaterial } from "./Materials/SampleMaterial"
 

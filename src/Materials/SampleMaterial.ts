@@ -1,10 +1,12 @@
-import { Scene, ShaderMaterial } from "babylonjs"
+import { Scene } from "@babylonjs/core/scene"
+import { ShaderMaterial } from "@babylonjs/core/Materials/shaderMaterial"
+import { Effect } from "@babylonjs/core/Materials/effect"
 
 import * as sampleVertexShader from "./Shaders/Sample/sample.vertex.glsl"
 import * as sampleFragmentShader from "./Shaders/Sample/sample.fragment.glsl"
 
-BABYLON.Effect.ShadersStore["sampleVertexShader"] = sampleVertexShader
-BABYLON.Effect.ShadersStore["sampleFragmentShader"] = sampleFragmentShader
+Effect.ShadersStore["sampleVertexShader"] = sampleVertexShader
+Effect.ShadersStore["sampleFragmentShader"] = sampleFragmentShader
 
 export class SampleMaterial extends ShaderMaterial {
 

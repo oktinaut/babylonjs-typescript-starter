@@ -1,11 +1,12 @@
 const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 module.exports = {
   entry: "./src/index.ts",
   output: {
     path: path.resolve(__dirname, "./dist"),
-    filename: "bundle.js",
+    filename: '[name].[contenthash].js',
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".glsl"],
@@ -22,8 +23,8 @@ module.exports = {
             { from: "public" },
         ],
     }),
+    new HtmlWebpackPlugin({
+      template: "!!handlebars-loader!src/index.hbs",
+    }),
   ],
-  externals: {
-    "babylonjs": "BABYLON",
-  },
 }

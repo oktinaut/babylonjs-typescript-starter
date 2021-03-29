@@ -24,6 +24,6 @@ jobs:
         env:
           BUTLER_CREDENTIALS: ${{ secrets.ITCH_API_KEY }}
           CHANNEL: browser           # After publish tag this channel as 'HTML5 / Playable in browser'
-          ITCH_GAME: example-project # Use your project's name on itch.io
+          ITCH_GAME: babylon-example # Use your project's name on itch.io
           ITCH_USER: oktinaut        # Replace with your itch.io username
           PACKAGE: dist/

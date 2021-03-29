@@ -1,0 +1,29 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install Dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Publish
+        uses: josephbmanley/butler-publish-itchio-action@master
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.ITCH_API_KEY }}
+          CHANNEL: browser           # After publish tag this channel as 'HTML5 / Playable in browser'
+          ITCH_GAME: example-project # Use your project's name on itch.io
+          ITCH_USER: oktinaut        # Replace with your itch.io username
+          PACKAGE: dist/

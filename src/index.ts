@@ -4,6 +4,8 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight"
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
 import { Scene } from "@babylonjs/core/scene"
 import { Vector3 } from "@babylonjs/core/Maths/math.vector"
+import "@babylonjs/core/Debug/debugLayer"
+import "@babylonjs/inspector"
 
 import { SampleMaterial } from "./Materials/SampleMaterial"
 
@@ -31,6 +33,9 @@ const mesh = MeshBuilder.CreateGround("mesh", {}, scene)
 
 const material =  new SampleMaterial("material", scene)
 mesh.material = material
+
+//Show Babylon inspector
+scene.debugLayer.show()
 
 engine.runRenderLoop(() => {
     scene.render();

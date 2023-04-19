@@ -1,42 +1,37 @@
-import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera"
+
 import { Engine } from "@babylonjs/core/Engines/engine"
-import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight"
-import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
+
 import { Scene } from "@babylonjs/core/scene"
-import { Vector3 } from "@babylonjs/core/Maths/math.vector"
+import { sceneObservers } from "./observers"
 import "@babylonjs/core/Debug/debugLayer"
 import "@babylonjs/inspector"
 
-import { SampleMaterial } from "./Materials/SampleMaterial"
+import scene1 from "./scene1"
+import scene2 from "./scene2"
+import uiScene from "./uiScene"
 
 const view = document.getElementById("view") as HTMLCanvasElement
 const engine = new Engine(view, true)
 
-const scene = new Scene(engine)
+declare global {
+    var currentSceneName: string
+}
 
-const camera = new ArcRotateCamera(
-    "camera",
-    Math.PI / 2,
-    Math.PI / 3.2,
-    2,
-    Vector3.Zero(),
-    scene)
+let currentScene = new scene1(engine, view)
+let guiScene = new uiScene(engine, view)
 
-camera.attachControl(view)
+guiScene.autoClear = false
 
-const light = new HemisphericLight(
-    "light",
-    new Vector3(0, 1, 0),
-    scene)
 
-const mesh = MeshBuilder.CreateGround("mesh", {}, scene)
-
-const material =  new SampleMaterial("material", scene)
-mesh.material = material
+sceneObservers.changeScene.add((scene : Scene) => {
+    currentScene = scene
+    currentScene.debugLayer.setAsActiveScene();				
+})
 
 //Show Babylon inspector
-scene.debugLayer.show()
+currentScene.debugLayer.show()
 
 engine.runRenderLoop(() => {
-    scene.render();
+    currentScene.render()
+    guiScene.render()
 })

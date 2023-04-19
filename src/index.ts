@@ -1,4 +1,3 @@
-
 import { Engine } from "@babylonjs/core/Engines/engine"
 
 import { Scene } from "@babylonjs/core/scene"
@@ -23,9 +22,9 @@ let guiScene = new uiScene(engine, view)
 guiScene.autoClear = false
 
 
-sceneObservers.changeScene.add((scene : Scene) => {
+sceneObservers.changeScene.add((scene: Scene) => {
     currentScene = scene
-    currentScene.debugLayer.setAsActiveScene();				
+    currentScene.debugLayer.setAsActiveScene();
 })
 
 //Show Babylon inspector

@@ -2,17 +2,15 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera"
 import { Engine } from "@babylonjs/core/Engines/engine"
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight"
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
-import { Scene } from "@babylonjs/core/scene"
 import { Vector3 } from "@babylonjs/core/Maths/math.vector"
 import { SampleMaterial } from "./Materials/SampleMaterial"
+import GameScene from "./gameScene"
 
-import scene2 from "./scene2"
-import { sceneObservers } from "./observers"
 
-export default class scene1 extends Scene {
+export default class Scene1 extends GameScene {
 
     constructor(engine: Engine, view: HTMLCanvasElement) {
-        super(engine)
+        super(engine,view)
         const camera = new ArcRotateCamera(
             "camera",
             Math.PI / 2,

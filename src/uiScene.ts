@@ -3,7 +3,7 @@ import { Scene } from "@babylonjs/core/scene";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { AdvancedDynamicTexture } from "@babylonjs/gui/2D/advancedDynamicTexture";
 import { Button } from "@babylonjs/gui/2D/controls/button";
-import scene2 from "./scene2";
+import Scene2 from "./scene2";
 import { sceneObservers } from "./observers";
 import { Camera } from "@babylonjs/core";
 
@@ -22,7 +22,7 @@ export default class uiScene extends Scene {
     closeButton.background = "#fff9f9";
     closeButton.verticalAlignment = 0;
     closeButton.onPointerClickObservable.add(() => {
-        sceneObservers.changeScene.notifyObservers(new scene2(engine, view));
+        sceneObservers.changeScene.notifyObservers(new Scene2(engine, view));
     });
 
     this.advancedTexture.addControl(closeButton);

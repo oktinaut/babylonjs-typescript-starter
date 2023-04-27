@@ -2,17 +2,18 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
-import { Scene } from "@babylonjs/core/scene";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Animation } from "@babylonjs/core/Animations/animation"
+
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
-import { SampleMaterial } from "./Materials/SampleMaterial";
-import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
-import { float } from "@babylonjs/core";
 
-export default class scene2 extends Scene {
+import GameScene from "./gameScene";
+import { BounceEase, CubicEase, SineEase } from "@babylonjs/core";
+
+export default class Scene2 extends GameScene {
   constructor(engine: Engine, view: HTMLCanvasElement) {
-    super(engine);
+    super(engine,view);
 
     const camera = new ArcRotateCamera(
       "camera",
@@ -37,26 +38,11 @@ export default class scene2 extends Scene {
     );
     // Move the sphere upward 1/2 its height
     sphere.position.y = 0.5;
-    //const material = new SampleMaterial("material", this)
-    //sphere.material = material
+
+    let anim = Animation.CreateAndStartAnimation('BallBounce', sphere, "position.y", 60, 100, 0.5, 2, Animation.ANIMATIONLOOPMODE_CYCLE,new SineEase());
 
     const mesh = MeshBuilder.CreateGround("mesh", {}, this);
+    
 
-    // Code to fade to black and back.
-    const startingIntensity: number = light.intensity;
-    let frame: number = 0;
-    const startingColor: Color4 = this.clearColor.clone();
-    let t: float;
-    this.onBeforeRenderObservable.add(() => {
-      frame += 1;
-      t = 0.5 + Math.cos(frame / 50) / 2
-      light.intensity = startingIntensity * t;
-      Color4.LerpToRef(
-        new Color4(0, 0, 0, 1),
-        startingColor,
-        t,
-        this.clearColor
-      );
-    });
   }
 }

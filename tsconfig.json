@@ -1,10 +1,13 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "moduleResolution": "node"
+        "module": "esNext",
+		"target": "es2021",
+		"moduleResolution": "node",
+        "esModuleInterop": true,
+        "preserveConstEnums":true
     },
     "include": [
         "src/**/*"
     ]
 }
+

@@ -5,31 +5,41 @@ import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
 import { Vector3 } from "@babylonjs/core/Maths/math.vector"
 import { SampleMaterial } from "./Materials/SampleMaterial"
 import GameScene from "./gameScene"
+import { Scene } from "@babylonjs/core/scene"
+import { CreateSceneClass } from "./createScene"
 
 
-export default class Scene1 extends GameScene {
+class Scene1 implements CreateSceneClass {
+    preTasks = [];
 
-    constructor(engine: Engine, view: HTMLCanvasElement) {
-        super(engine,view)
+    createScene = async (engine: Engine, view: HTMLCanvasElement): Promise<Scene> => {
+        
+        const scene = new Scene(engine);
+
+
         const camera = new ArcRotateCamera(
             "camera",
             Math.PI / 2,
             Math.PI / 3.2,
             2,
             Vector3.Zero(),
-            this)
+            scene)
 
         camera.attachControl(view)
 
         const light = new HemisphericLight(
             "light",
             new Vector3(0, 1, 0),
-            this)
+            scene)
 
-        const mesh = MeshBuilder.CreateGround("mesh", {}, this)
-        const material = new SampleMaterial("material", this)
+        const mesh = MeshBuilder.CreateGround("mesh", {}, scene)
+        const material = new SampleMaterial("material", scene)
         mesh.material = material
+
+        return scene
+
     }
 }
+export default new Scene1();
 
 

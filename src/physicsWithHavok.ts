@@ -15,10 +15,11 @@ import { PhysicsShapeBox, PhysicsShapeSphere } from "@babylonjs/core/Physics/v2/
 import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
 import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
+import { CreateBox, PhysicsAggregate, PhysicsViewer } from "@babylonjs/core";
 
 class PhysicsSceneWithAmmo implements CreateSceneClass {
     preTasks = [havokModule];
-
+ 
     createScene = async (engine: Engine, canvas: HTMLCanvasElement): Promise<Scene> => {
         // This creates a basic Babylon Scene object (non-mesh)
         const scene = new Scene(engine);
@@ -40,7 +41,7 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
         light.intensity = 0.7;
 
         // Our built-in 'sphere' shape.
-        const sphere = CreateSphere("sphere", { diameter: 2, segments: 32 }, scene);
+        const sphere = CreateSphere("sphere", { diameter: 2, segments: 24 }, scene);
 
         // Move the sphere upward at 4 units
         sphere.position.y = 4;
@@ -50,22 +51,30 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
         
         // PHYSICS!
         scene.enablePhysics(null, new HavokPlugin(true, await havokModule));
+
+        //var physicsViewer = new PhysicsViewer();
+
         // Create a sphere shape
         const sphereShape = new PhysicsShapeSphere(new Vector3(0, 0, 0)
             , 1
             , scene);
 
-        // Sphere body
-        const sphereBody = new PhysicsBody(sphere, PhysicsMotionType.DYNAMIC, false, scene);
-
+            
         // Set shape material properties
         sphereShape.material = { friction: 0.2, restitution: 0.6 };
+
+        // Sphere body
+        const sphereBody = new PhysicsBody(sphere, PhysicsMotionType.DYNAMIC, false, scene);
 
         // Associate shape and body
         sphereBody.shape = sphereShape;
 
         // And body mass
         sphereBody.setMassProperties({ mass: 1 });
+
+
+        //physicsViewer.showBody(sphereBody)
+
 
         // Create a static box shape
         const groundShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
@@ -84,9 +93,34 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
 
         // Set the mass to 0
         groundBody.setMassProperties({ mass: 0 });
-
+        
+        this.addBoxes(scene)
 
         return scene;
+    };
+    private addBoxes = (scene: Scene) => {
+        const box = CreateBox("boxxy", {width:1,height:1,depth:1}, scene);
+        const boxShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
+        , new Quaternion(0, 0, 0)
+        ,new Vector3(1, 1, 1)
+        , scene);
+
+        box.position.y = 6;
+        box.position.x = 0;
+           // Set shape material properties
+           boxShape.material = { friction: 0.2, restitution: 0.6 };
+
+           // Sphere body
+           const sphereBody = new PhysicsBody(box, PhysicsMotionType.DYNAMIC, false, scene);
+   
+           // Associate shape and body
+           sphereBody.shape = boxShape;
+
+   
+           // And body mass
+           sphereBody.setMassProperties({ mass: 1 });
+
+
     };
 }
 

@@ -7,7 +7,7 @@ import physicsWithHavok from "./physicsWithHavok";
 
 import { sceneObservers } from "./observers";
 import { Camera } from "@babylonjs/core";
-import { getSceneModuleWithName } from "./createScene";
+//import { getSceneModuleWithName } from "./createScene";
 
 export default class uiScene extends Scene {
   private advancedTexture?: AdvancedDynamicTexture;

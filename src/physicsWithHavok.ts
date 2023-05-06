@@ -16,7 +16,7 @@ import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
 import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 import { CreateBox, PhysicsAggregate, PhysicsViewer } from "@babylonjs/core";
-
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
 class PhysicsSceneWithAmmo implements CreateSceneClass {
     preTasks = [havokModule];
  
@@ -99,26 +99,36 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
         return scene;
     };
     private addBoxes = (scene: Scene) => {
-        const box = CreateBox("boxxy", {width:1,height:1,depth:1}, scene);
-        const boxShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
-        , new Quaternion(0, 0, 0)
-        ,new Vector3(1, 1, 1)
-        , scene);
 
-        box.position.y = 6;
-        box.position.x = 0;
-           // Set shape material properties
-           boxShape.material = { friction: 0.2, restitution: 0.6 };
 
-           // Sphere body
-           const sphereBody = new PhysicsBody(box, PhysicsMotionType.DYNAMIC, false, scene);
-   
-           // Associate shape and body
-           sphereBody.shape = boxShape;
+        const boxesToMake = 10
+        let boxes : Mesh[] = []
 
-   
-           // And body mass
-           sphereBody.setMassProperties({ mass: 1 });
+        for(let i = 0; i < boxesToMake ; i++){
+
+            boxes.push(CreateBox("boxxy", {width:1,height:1,depth:1}, scene))
+            const boxShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
+            , new Quaternion(0, 0, 0)
+            ,new Vector3(1, 1, 1)
+            , scene);
+    
+            boxes[i].position.y = 6 + i ;
+            boxes[i].position.x = 0;
+            // Set shape material properties
+            boxShape.material = { friction: 0.2, restitution: 0.6 };
+    
+            // Sphere body
+            const sphereBody = new PhysicsBody(boxes[i], PhysicsMotionType.DYNAMIC, false, scene);
+    
+            // Associate shape and body
+            sphereBody.shape = boxShape;
+    
+    
+            // And body mass
+            sphereBody.setMassProperties({ mass: 1 });
+
+        }
+
 
 
     };

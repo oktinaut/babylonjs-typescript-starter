@@ -15,7 +15,7 @@ import { PhysicsShapeBox, PhysicsShapeSphere } from "@babylonjs/core/Physics/v2/
 import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
 import { PhysicsMotionType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
-import { CreateBox, PhysicsAggregate, PhysicsViewer } from "@babylonjs/core";
+import { Color3, CreateBox, DistanceConstraint, PhysicsAggregate, PhysicsRaycastResult, PhysicsViewer, PointerDragBehavior, Ray, RayHelper, SixDofDragBehavior, StandardMaterial } from "@babylonjs/core";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 class PhysicsSceneWithAmmo implements CreateSceneClass {
     preTasks = [havokModule];
@@ -41,10 +41,10 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
         light.intensity = 0.7;
 
         // Our built-in 'sphere' shape.
-        const sphere = CreateSphere("sphere", { diameter: 2, segments: 24 }, scene);
+       // const sphere = CreateSphere("sphere", { diameter: 2, segments: 24 }, scene);
 
         // Move the sphere upward at 4 units
-        sphere.position.y = 4;
+       // sphere.position.y = 4;
         
         // Our built-in 'ground' shape.
         const ground = CreateGround("ground", { width: 10, height: 10 }, scene);
@@ -54,7 +54,7 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
 
         //var physicsViewer = new PhysicsViewer();
 
-        // Create a sphere shape
+        /* Create a sphere shape
         const sphereShape = new PhysicsShapeSphere(new Vector3(0, 0, 0)
             , 1
             , scene);
@@ -74,7 +74,7 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
 
 
         //physicsViewer.showBody(sphereBody)
-
+*/
 
         // Create a static box shape
         const groundShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
@@ -93,11 +93,129 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
 
         // Set the mass to 0
         groundBody.setMassProperties({ mass: 0 });
+
+var pointerDragBehavior = new SixDofDragBehavior();
+
+       // var pointerDragBehavior = new PointerDragBehavior({});
+    //    pointerDragBehavior.useObjectOrientationForDragging = false;
+
+        pointerDragBehavior.dragDeltaRatio = 0.2;
+        //this one modifies z dragging behavior
+       pointerDragBehavior.zDragFactor = 0.2;
+
+        //sphere.addBehavior(pointerDragBehavior,true);
+     
+
+
+        let indicatorPoint = CreateSphere("mouseBall", { diameter: 0.5, segments: 8 }, scene);
+        
+        var indicatorPointMat = new StandardMaterial(
+            "indicatorPointMat",
+            scene
+        );
+        indicatorPointMat.emissiveColor = new Color3(0, 1, 0);
+        indicatorPointMat.alpha = 0.7;
+        indicatorPoint.material = indicatorPointMat;
+        indicatorPoint.isPickable = false;
+
+        var pickingRay = new Ray(
+            new Vector3(0, 0, 0),
+            new Vector3(0, 1, 0)
+        );
+        var rayHelper = new RayHelper(pickingRay);
+        rayHelper.show(scene);
+        var raycastResult = new PhysicsRaycastResult();
+
+        var physEngine = scene.getPhysicsEngine();
+
+        let dragPoint = CreateSphere("mouseBall", { diameter: 0.5, segments: 8 }, scene);
+        dragPoint.position.x = -3
+        var dragPointMat = new StandardMaterial(
+            "dragPointMat",
+            scene
+        );
+        dragPointMat.emissiveColor = new Color3(1, 0, 0);
+        dragPointMat.alpha = 0.7;
+        dragPoint.material = dragPointMat;
+        dragPoint.isPickable = true;
+
+              // Create a sphere shape
+              const dragPointShape = new PhysicsShapeSphere(new Vector3(0, 0, 0)
+              , 0.5
+              , scene);
+         // Sphere body
+         const dragPointBody = new PhysicsBody(dragPoint, PhysicsMotionType.STATIC, false, scene);
+
+         // Associate shape and body
+         dragPointBody.shape = dragPointShape;
+         //dragPoint.physicsBody.setCollisionCallbackEnabled(false)
+
+         pointerDragBehavior.attach(dragPoint)
+
+       // dragPoint.addBehavior(pointerDragBehavior,true);
+
+       const constraint = new DistanceConstraint(
+        1, // max distance between the two bodies
+        scene
+      );
+      
+
+        scene.onPointerMove = (evt, pickInfo) => {
+            var hit = false;
+            var hitPos = null;
+    
+                scene.createPickingRayToRef(
+                    scene.pointerX,
+                    scene.pointerY,
+                    null,
+                    pickingRay,
+                    camera
+                );
+                raycastResult = physEngine.raycast(pickingRay.origin, pickingRay.origin.add(pickingRay.direction.scale(1000)));
+                hit = raycastResult.hasHit;
+                hitPos = raycastResult.hitPointWorld;
+        
+            //console.log("hit", hit, hitPos?.toString());
+            if (hit) {
+                indicatorPoint.isVisible = true;
+                indicatorPoint.position.copyFrom(hitPos);
+            }else{
+              //  indicatorPoint.position = new Vector3(scene.pointerX,1, scene.pointerY)
+            }
+        };
+
+        scene.onPointerDown = (evt, pickInfo) => {
+
+            if(pickInfo.pickedMesh == ground || pickInfo.pickedMesh == dragPoint|| pickInfo.pickedMesh == indicatorPoint)
+                return 
+
+            scene.activeCamera.detachControl()
+
+            dragPoint.position.copyFrom(indicatorPoint.position);
+
+      
+            if(pickInfo.pickedMesh)
+            dragPointBody.addConstraint(pickInfo.pickedMesh.physicsBody, constraint);
+
+          
+            dragPoint.position.copyFrom(indicatorPoint.position);
+
+            
+            
+
+        }
+        scene.onPointerUp = (evt, pickInfo) => {
+            scene.activeCamera.attachControl()
+        }
+    
         
         this.addBoxes(scene)
 
         return scene;
     };
+
+
+
     private addBoxes = (scene: Scene) => {
 
 
@@ -111,6 +229,7 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
             , new Quaternion(0, 0, 0)
             ,new Vector3(1, 1, 1)
             , scene);
+
     
             boxes[i].position.y = 6 + i ;
             boxes[i].position.x = 0;
@@ -121,11 +240,11 @@ class PhysicsSceneWithAmmo implements CreateSceneClass {
             const sphereBody = new PhysicsBody(boxes[i], PhysicsMotionType.DYNAMIC, false, scene);
     
             // Associate shape and body
-            sphereBody.shape = boxShape;
+            sphereBody.shape = boxShape
     
     
             // And body mass
-            sphereBody.setMassProperties({ mass: 1 });
+            sphereBody.setMassProperties({ mass: 1 })
 
         }
 

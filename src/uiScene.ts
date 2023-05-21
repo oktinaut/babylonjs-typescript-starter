@@ -25,7 +25,6 @@ export default class uiScene extends Scene {
     closeButton.verticalAlignment = 0;
     closeButton.onPointerClickObservable.add(() => {
 
-      
       LoadNextScene()
        
     });

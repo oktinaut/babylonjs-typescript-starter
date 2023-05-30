@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babylonjs/inspector": "^6.1.0",
+    "@babylonjs/inspector": "^6.5.0",
     "copy-webpack-plugin": "^8.1.0",
     "handlebars": "^4.7.7",
     "handlebars-loader": "^1.7.1",
@@ -25,7 +25,7 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
-    "@babylonjs/core": "^6.1.0",
+    "@babylonjs/core": "^6.5.0",
     "@babylonjs/havok": "^1.0.1"
   }
 }

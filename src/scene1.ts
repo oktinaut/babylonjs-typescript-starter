@@ -16,7 +16,6 @@ class Scene1 implements CreateSceneClass {
         
         const scene = new Scene(engine);
 
-
         const camera = new ArcRotateCamera(
             "camera",
             Math.PI / 2,

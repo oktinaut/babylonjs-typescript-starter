@@ -4,12 +4,12 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { AdvancedDynamicTexture } from "@babylonjs/gui/2D/advancedDynamicTexture";
 import { Button } from "@babylonjs/gui/2D/controls/button";
 import { Container } from "@babylonjs/gui/2D/controls/container";
+import { sceneObservers } from "./observers";
 import { Camera } from "@babylonjs/core";
 import physicsWithHavok from "./physicsWithHavok";
-import { sceneObservers } from "./observers";
 
 const mainWindowGUI = require("./HUD.json")
-const missions = require("./Missions_popup.json")
+const itemGUI = require("./Item.json")
 
 
 export default class uiScene extends Scene {
@@ -19,17 +19,35 @@ export default class uiScene extends Scene {
     super(engine);
 
     this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI")
+    //this.advancedTexture.idealWidth = 1920;
+
+    // let missionComp = Container.Parse(mainWindowGUI, this.advancedTexture)
+    let itemComp = Container.Parse(itemGUI, this.advancedTexture)
+
+    // let missions = missionComp.getDescendants(false, control => control.name === 'Items')[0]
+
     this.advancedTexture.parseSerializedObject(mainWindowGUI)
 
-    let missionControl = Container.Parse(missions, this.advancedTexture)
+    // this.advancedTexture.addControl(missionComp)
 
-    let allMissions = missionControl.getDescendants(false, control => control.name === 'Items')[0]
+    //@ts-ignore
+    //this.advancedTexture.addControl(itemComp)
 
-    this.advancedTexture.addControl(missionControl)
+    /*
 
+    scroll.onPointerEnterObservable.add(function(){
+        console.log("in");
+        camera1.detachControl();
+        bgcamera.detachControl();
+    });
 
-    const camera = new Camera("camera", Vector3.Zero(), this);
-    camera.attachControl(view);
+    scroll.onPointerOutObservable.add(function(){
+        console.log("out");        
+        camera1.attachControl(canvas, true);
+        bgcamera.attachControl(canvas, true);
+    });
+    */
+
 
 
     let loadPhysxBtn = Button.CreateSimpleButton("closeConvoBtn", "Load Havok");
@@ -38,9 +56,14 @@ export default class uiScene extends Scene {
     loadPhysxBtn.background = "#fff9f9";
     loadPhysxBtn.verticalAlignment = 0;
     loadPhysxBtn.onPointerClickObservable.add(() => {
+
       LoadNextScene()
+
     });
+
     this.advancedTexture.addControl(loadPhysxBtn);
+    const camera = new Camera("camera", Vector3.Zero(), this);
+    camera.attachControl(view);
 
     async function LoadNextScene() {
       let createSceneModule = physicsWithHavok// await getSceneModuleWithName('scene1');
@@ -57,7 +80,6 @@ export default class uiScene extends Scene {
 
       sceneObservers.changeScene.notifyObserversWithPromise(nextScene);
     }
-
   }
 
 }

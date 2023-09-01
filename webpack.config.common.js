@@ -9,18 +9,20 @@ module.exports = {
     filename: '[name].[contenthash].js',
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".glsl"],
+    extensions: [".ts", ".tsx", ".js", ".glsl",".png"],
   },
   module: {
     rules: [
+      { test: /\.png?$/, loader: "file-loader" },
       { test: /\.tsx?$/, loader: "ts-loader" },
       { test: /\.glsl$/, loader: "webpack-glsl-loader" },
+      //{ test: /\.(png|svg|jpg|jpeg|gif)$/, type: 'asset/resource',},
     ],
   },
   plugins: [
     new CopyPlugin({
         patterns: [
-            { from: "public" },
+            { from: "src/images", to: "images" }
         ],
     }),
     new HtmlWebpackPlugin({

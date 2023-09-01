@@ -14,19 +14,26 @@ import { PhysicsShapeBox } from "@babylonjs/core/Physics/v2/physicsShape";
 import { PhysicsBody } from "@babylonjs/core/Physics/v2/physicsBody";
 import { PhysicsMotionType, PhysicsShapeType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
-import { BallAndSocketConstraint } from "@babylonjs/core/Physics/v2/physicsConstraint"
-import { Color3 } from "@babylonjs/core/Maths/math.color"
+import { BallAndSocketConstraint, LockConstraint } from "@babylonjs/core/Physics/v2/physicsConstraint"
+import { Color3, Color4 } from "@babylonjs/core/Maths/math.color"
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder"
 import { PhysicsAggregate } from "@babylonjs/core/Physics/v2/physicsAggregate"
 import { PhysicsRaycastResult } from "@babylonjs/core/Physics/physicsRaycastResult"
-import { PointerDragBehavior } from "@babylonjs/core"
+import { AbstractMesh, PointerDragBehavior, PointerEventTypes } from "@babylonjs/core"
 import { Ray } from "@babylonjs/core/Culling/ray"
 import { RayHelper } from "@babylonjs/core/Debug/rayHelper";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { Scalar } from "@babylonjs/core/Maths/math.scalar";
+
 class PhysicsSceneWithHavok implements CreateSceneClass {
     preTasks = [havokModule];
+    draggingMesh: AbstractMesh;
+    indicatorPoint: AbstractMesh;
+    anchor: AbstractMesh;
+    dragPoint: AbstractMesh;
 
+    
     createScene = async (engine: Engine, canvas: HTMLCanvasElement): Promise<Scene> => {
         // This creates a basic Babylon Scene object (non-mesh)
         const scene = new Scene(engine);
@@ -44,7 +51,7 @@ class PhysicsSceneWithHavok implements CreateSceneClass {
 
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
-        
+
         // Our built-in 'ground' shape.
         const ground = CreateGround("ground", { width: 40, height: 40 }, scene);
 
@@ -72,108 +79,225 @@ class PhysicsSceneWithHavok implements CreateSceneClass {
         // Set the mass to 0
         groundBody.setMassProperties({ mass: 0 });
 
-        var pointerDragBehavior = new PointerDragBehavior();
+        let pointerDragBehavior = new PointerDragBehavior();
 
         pointerDragBehavior.useObjectOrientationForDragging = true;
-
         pointerDragBehavior.dragDeltaRatio = 0.3
-
         pointerDragBehavior.maxDragAngle = 1
 
-        let indicatorPoint = CreateSphere("mouseHitBall", { diameter: 0.25, segments: 8 }, scene);
-        var indicatorPointMat = new StandardMaterial(
+        this.indicatorPoint = CreateSphere("rayHitBall", { diameter: 0.25, segments: 8 }, scene);
+        const indicatorPointMat = new StandardMaterial(
             "indicatorPointMat",
             scene
         );
         indicatorPointMat.emissiveColor = new Color3(0, 1, 0);
         indicatorPointMat.alpha = 0.7;
-        indicatorPoint.material = indicatorPointMat;
-        indicatorPoint.isPickable = false;
+        this.indicatorPoint.material = indicatorPointMat;
+        this.indicatorPoint.isPickable = false;
 
         let pickingRay = new Ray(
             new Vector3(0, 0, 0),
             new Vector3(0, 1, 0)
         );
 
-        var rayHelper = new RayHelper(pickingRay);
-        rayHelper.show(scene);
+     //   var rayHelper = new RayHelper(pickingRay);
+       // rayHelper.show(scene);
         var raycastResult = new PhysicsRaycastResult();
 
         var physEngine = scene.getPhysicsEngine();
 
-        let dragPoint = CreateSphere("mouseBall", { diameter: 0.5, segments: 8 }, scene);
-        dragPoint.position.x = -3
+        this.anchor = CreateSphere("anchorMesh", { diameter: 0.5, segments: 8 }, scene);
+        this.anchor.isPickable = false;
 
-        dragPoint.visibility = 0
-        pointerDragBehavior.attach(dragPoint)
 
-        scene.onPointerMove = (evt, pickInfo) => {
-            var hit = false;
-            var hitPos = null;
+        this.dragPoint = CreateSphere("mouseBall", { diameter: 0.5, segments: 8 }, scene);
+        this.dragPoint.position.x = -3
+        this.dragPoint.isPickable = false
+        this.dragPoint.visibility = 1
+        this.dragPoint.setEnabled(false)
 
-            scene.createPickingRayToRef(
-                scene.pointerX,
-                scene.pointerY,
-                null,
-                pickingRay,
-                camera
-            );
 
-            raycastResult = physEngine.raycast(pickingRay.origin, pickingRay.origin.add(pickingRay.direction.scale(1000)));
-            hit = raycastResult.hasHit;
-            hitPos = raycastResult.hitPointWorld;
+        pointerDragBehavior.attach(this.dragPoint)
 
-            if (hit) {
-                indicatorPoint.isVisible = true;
-                indicatorPoint.position.copyFrom(hitPos);
-            } else {
-                //  indicatorPoint.position = new Vector3(scene.pointerX,1, scene.pointerY)
+        let pointerDown: boolean = false
+
+        // Add a listener for pointer events
+        scene.onPointerObservable.add((pointerInfo) => {
+            switch (pointerInfo.type) {
+
+                case PointerEventTypes.POINTERDOWN:
+
+                this.dragPoint.setEnabled(true)
+                this.anchor.setEnabled(true)
+
+
+
+                if (pointerInfo.pickInfo.hit === false)
+                    return
+        
+
+                
+                    if (pointerInfo.pickInfo.pickedMesh == ground || this.draggingMesh == pointerInfo.pickInfo.pickedMesh || pointerInfo.pickInfo.pickedMesh ==  this.dragPoint || pointerInfo.pickInfo.pickedMesh == this.indicatorPoint || pointerInfo.pickInfo.pickedMesh == null)
+                        return
+
+                    this.draggingMesh = pointerInfo.pickInfo.pickedMesh
+
+
+                    this.anchorMeshToMouse(scene)
+                    
+
+                    //check point
+
+
+                    scene.activeCamera.detachControl()
+
+                    if (!pickingRay)
+                        return                 
+                    pointerDragBehavior.startDrag()
+
+                    // Set the pointer down state to true
+                    pointerDown = true;
+                break;
+
+                case PointerEventTypes.POINTERUP:
+
+                    pointerDragBehavior.releaseDrag()
+                    if ( this.dragPoint.physicsBody) {
+                        this.dragPoint.physicsBody.dispose()
+                    }
+
+
+                if (this.anchor.physicsBody)
+                    this.anchor.physicsBody.dispose()
+
+                    if(this.draggingMesh)
+                        this.draggingMesh = null
+        
+                //box.physicsBody.setLinearDamping(0.0)
+        
+             this.anchor.setEnabled(false)
+              this.dragPoint.setEnabled(false)
+
+        
+                pointerDragBehavior.dragging = false
+
+                    pointerInfo.pickInfo.pickedMesh
+                    scene.activeCamera.attachControl()
+                    // Set the pointer down state to false
+                    pointerDown = false;
+                 break;
+
+                case PointerEventTypes.POINTERMOVE:
+
+                    let hit = false;
+                    let hitPos = null;
+
+                    if (!pickingRay)
+                        return
+
+                    scene.createPickingRayToRef(
+                        scene.pointerX,
+                        scene.pointerY,
+                        null,
+                        pickingRay,
+                        camera
+                    );
+
+                    raycastResult = physEngine.raycast(pickingRay.origin, pickingRay.origin.add(pickingRay.direction.scale(1000)));
+                    hit = raycastResult.hasHit;
+                    hitPos = raycastResult.hitPointWorld;
+
+                    if (hit) {
+                        this.indicatorPoint.isVisible = true;
+                        this.indicatorPoint.position.copyFrom(hitPos)
+                    }
+
+                    // Check if the pointer down state is true
+                    if (pointerDown) {
+
+                        if (pointerInfo.pickInfo.pickedMesh == ground || this.draggingMesh == pointerInfo.pickInfo.pickedMesh || pointerInfo.pickInfo.pickedMesh ==  this.dragPoint || pointerInfo.pickInfo.pickedMesh == this.indicatorPoint || pointerInfo.pickInfo.pickedMesh == null)
+                        return
+
+                        // Do something when the mouse is moving and the mouse down event is on
+                        //console.log("Mouse move and mouse down");
+                    }
+                break;
             }
-        };
+        });
 
-        scene.onPointerDown = (evt, pickInfo) => {
-
-            if (pickInfo.pickedMesh == ground || pickInfo.pickedMesh == dragPoint || pickInfo.pickedMesh == indicatorPoint || pickInfo.pickedMesh == null)
-                return
-
-            scene.activeCamera.detachControl()
-
-            dragPoint.position.copyFrom(indicatorPoint.position)
-
-            const localCorrds = Vector3.TransformCoordinates(indicatorPoint.position, pickInfo.pickedMesh.getWorldMatrix().clone().invert())
-
-            let sphereAggregate = new PhysicsAggregate(dragPoint, PhysicsShapeType.SPHERE, { mass: 1, restitution: 0.75 }, scene);
-            dragPoint.physicsBody.setMotionType(PhysicsMotionType.STATIC)
-            dragPoint.physicsBody.disablePreStep = false;
-
-
-            let constraint = new BallAndSocketConstraint(
-                Vector3.Zero(),
-                localCorrds,
-                new Vector3(0, 0, 0),
-                new Vector3(0.1,0.1,0.1),
-                scene
-            )
-            pointerDragBehavior.startDrag()
-
-            dragPoint.physicsBody.addConstraint(pickInfo.pickedMesh.physicsBody, constraint);
-        }
-        scene.onPointerUp = (evt, pickInfo) => {
-            pointerDragBehavior.releaseDrag()
-            if (dragPoint.physicsBody) {
-                dragPoint.physicsBody.dispose()
+        pointerDragBehavior.onDragStartObservable.add(() => {
+           // moving = true
+        })
+    
+        pointerDragBehavior.onDragEndObservable.add(() => {
+           // moving = false
+        })
+    
+        scene.onAfterRenderObservable.add(() => {
+            if (pointerDragBehavior.dragging) {
+                const flatDistance = Vector3.DistanceSquared(this.dragPoint.position, this.draggingMesh.position)
+                const force = 40 * flatDistance
+                this.anchor.physicsBody.applyForce(this.dragPoint.position.subtract(this.anchor.position).scale(force), this.anchor.position);
             }
-            scene.activeCamera.attachControl()
-        }
+        })
+    
+
+
         this.addBoxes(scene)
         return scene;
     };
 
+    private anchorMeshToMouse = (scene: Scene) => {
+
+        this.dragPoint.setEnabled(true)
+
+        this.dragPoint.position.copyFrom(this.indicatorPoint.position)
+
+        this.anchor.position = this.indicatorPoint.position.clone()
+
+        const anchorBody = new PhysicsAggregate(this.anchor, PhysicsShapeType.SPHERE, { mass: 0.1, restitution: 0.0 }, scene);
+        this.anchor.physicsBody.setMotionType(PhysicsMotionType.DYNAMIC)
+        anchorBody.body.disablePreStep = false;
+
+        this.anchor.physicsBody.disablePreStep = false;
+        this.anchor.physicsBody.setLinearDamping(200.0)
+        this.anchor.physicsBody.setAngularDamping(200.0)
+
+        const localAnchorCorrds = Vector3.TransformCoordinates(this.anchor.position, this.draggingMesh.getWorldMatrix().clone().invert())
+        localAnchorCorrds.x = Scalar.Clamp(localAnchorCorrds.x, -1, 1)
+        localAnchorCorrds.y = Scalar.Clamp(localAnchorCorrds.y, -1, 1)
+        localAnchorCorrds.z = Scalar.Clamp(localAnchorCorrds.z, -1, 1)
+
+        let anchorJoint = new LockConstraint(
+            Vector3.Zero(),
+            localAnchorCorrds,
+            new Vector3(0.5, 0.5, 0.5),
+            new Vector3(0, 1, 0),
+            scene
+        )   
+
+        this.anchor.physicsBody.addConstraint(this.draggingMesh.physicsBody, anchorJoint);
+
+    }
+
     private addBoxes = (scene: Scene) => {
-        const boxesToMake = 10
+        const boxesToMake = 5
+
+        const faceColors = new Array(6);
+        faceColors[0] = new Color4(1, 0, 0, 1);   // red front
+        faceColors[1] = new Color4(0, 1, 0, 1);   // green top
+        faceColors[2] = new Color4(0, 0, 1, 1);   // blue top
+        faceColors[3] = new Color4(1, 1, 0, 1);   // yellow top
+        faceColors[4] = new Color4(0, 1, 1, 1);   // cyan top
+        faceColors[5] = new Color4(1, 0, 1, 1);   // magenta top
+
+        const options = {
+            size: 1,
+            faceColors: faceColors
+        };
         let boxes: Mesh[] = []
         for (let i = 0; i < boxesToMake; i++) {
-            boxes.push(CreateBox(`box-${i}`, { width: 1, height: 1, depth: 1 }, scene))
+            boxes.push(CreateBox(`box-${i}`, options, scene))
             const boxShape = new PhysicsShapeBox(new Vector3(0, 0, 0)
                 , new Quaternion(0, 0, 0)
                 , new Vector3(1, 1, 1)

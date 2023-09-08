@@ -93,8 +93,6 @@ function screenFade(scene : Scene, startValue : float, endValue : float): Promis
 
         let nodeInput = nodeMaterial.getInputBlockByPredicate((b) => b.name === "Cutoff");
 
-        // lol.value = 0.5
-
         let nodeTexture = nodeMaterial.getBlockByName("Texture"); //nodeMaterial.getInputBlockByPredicate((b) => b.name === "Texture");
         //@ts-ignore
         nodeTexture.texture = new Texture(gradFadeTex);

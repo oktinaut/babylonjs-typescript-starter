@@ -4,7 +4,6 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight"
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder"
 import { Vector3 } from "@babylonjs/core/Maths/math.vector"
 import { SampleMaterial } from "./Materials/SampleMaterial"
-import GameScene from "./gameScene"
 import { Scene } from "@babylonjs/core/scene"
 import { CreateSceneClass } from "./createScene"
 
